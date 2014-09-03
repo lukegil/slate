@@ -219,79 +219,6 @@ Affiliates API returns all affiliate links that should be used for a given store
 | *description* | A description of the store |
 
 
-## Cart - The LIST Object
-
-```json
-					"list" : {
-				   		  "MERCHANDISE" : [{
-						  				"item_id" : "123",
-										"quantity" : "5",
-										"price_per_unit" : "5.00",
-										"msrp" : "7.00",
-										"store_uid" : "ZOLABOOK",
-										"note" : "a note!",
-										"book" : {"$book-min"},
-										"shipping_carrier": "USPS",
-										"tracking_number": "235243523452",
-										"tracking_url" : "www.trackingurl.com"
-										}],
-							"PROMOTIONAL" : [{"any special promotions"}],
-							"PROMOTIONAL-SHP" : [{"any special shipping promotions"}],
-							"CERTIFICATE-RDM" : [{ "any certs that are being redeemed"}],
-							"SHIPPING" : [{
-									   "item_id" : "23",
-									   "quantity" : "2",
-									   "price_per_unit" : "3.98",
-									   "msrp" : "1.00", 
-									   "msrp_discount" : "0.00",
-									   "store_uid" : "ZOLABOOK",
-									   "note" : "a special note about shipping"
-									   }],
-							"TAX" : [{ 
-								  	"item_id" : "23",
-									"quantity" : "1",
-									"price_per_unit" : "0.10",
-									"msrp" : "0.00",
-									"msrp_discount" : "0.00",
-									"store_uid" : "ZOLABOOK",
-									"note" : "a special note about tax"
-									}]
-							}
-```
-
-The list object is returned for most `/ecomm/commerce` actions. It includes the breakdown of all pricing elements of a cart. This means: items to be purchased, taxes to be charged, shipping charges to be applies, and promotions or credits applied. 
-
-The returned data is broken down. Final calculations should be done client side. e.g. list.MERCHANDISE.price_per_unit + list.TAX.price_per_unit = total price for an ebook, to which no promotions are applied.
-
-The fields are:
-
-|Parameter | Description |
-|--------- | ------- | 
-| *MERCHANDISE* | The items in a cart, grouped by item_id | 
-| *MERCHANDISE.item_id* | The item_id of the particular object |
-| *MERCHANDISE.quantity* | The number of times that item exists in the cart|
-| *MERCHANDISE.price_per_unit* | The price of each individual item. |
-| *MERCHANDISE.note* | A special note |
-| *MERCHANDISE.book* | If there is only one book (aka work; entry_id) for a given order, this is an object. If it's a bundle, it is an array. The value returned is book-min. See the `/metadata/details` api.
-| *MERCHANDISE.shipping_carrier* | The selected shipping carrier for the ordered items. This can be split within a single cart |
-| *MERCHANDISE.tracking_number* | The number a user can use to view the progress of their order. |
-| *MERCHANDISE.tracking_url* | Where a user can go to use their tracking_number |
-| *PROMOTIONAL* | Any items to which promotions are applied. Promotion terms are specified per item (MG: Is this true?)|
-| *PROMOTIONAL.\** | Unless otherwise specified, values the same as in MERCHANDISE |
-| *PROMOTIONAL.price_per_unit* | The amount to add or subtract from MERCHANDISE.price_per_unit for a given item_id |
-| *PROMOTIONAL-SHP* | Special shipping promotions. Only affects SHIPPING. |
-| *PROMOTIONAL-SHP.\** | Unless otherwise specified, values the same as in MERCHANDISE |
-| *PROMOTIONAL-SHP.price_per_unit* | The amount to add or subtract from SHIPPING.price_per_unit for a given item_id |
-| *CERTIFICATE-RDM* | How to redeem a certificate, not yet implemented |
-| *SHIPPING* | Pricing information for the shipment part of the order |
-| *SHIPPING.\** | Unless otherwise specified, values the same as in MERCHANDISE |
-| *SHIPPING.price_per_unit* | The price to ship the given item. The sum of all SHIPPING.price_per_units is the total shipping price |
-| *TAX* | Calculated based on Billing Addr., or if none, ip address. The tax block |
-| *TAX.\** |  Unless otherwise specified, values the same as in MERCHANDISE. |
-| *TAX.price_per_unit* | The tax to be applied to a given order-item in the cart |
-
-
-
 ## Cart - Initialize Cart
 
 ```shell
@@ -434,7 +361,29 @@ This endpoint adds a specific item to a cart. The response includes the same inf
 | *order_id* | The order_id returned by the `initialize` action |
 | *currency_symbol* |  The currency symbol to user when displaying prices |
 | *total* |  The total cost of items in the cart |
-| *list* | See [the `list` overview](#cart---the-list-object) |
+| *list* | This is the various price breakdowns of the cart. It is an array. Only objects with values are returned. |
+| *MERCHANDISE* | The items in a cart, grouped by item_id | 
+| *MERCHANDISE.item_id* | The item_id of the particular object |
+| *MERCHANDISE.quantity* | The number of times that item exists in the cart|
+| *MERCHANDISE.price_per_unit* | The price of each individual item. |
+| *MERCHANDISE.note* | A special note |
+| *MERCHANDISE.book* | If there is only one book (aka work; entry_id) for a given order, this is an object. If it's a bundle, it is an array. The value returned is book-min. See the `/metadata/details` api.
+| *MERCHANDISE.shipping_carrier* | The selected shipping carrier for the ordered items. This can be split within a single cart |
+| *MERCHANDISE.tracking_number* | The number a user can use to view the progress of their order. |
+| *MERCHANDISE.tracking_url* | Where a user can go to use their tracking_number |
+| *PROMOTIONAL* | Any items to which promotions are applied. Promotion terms are specified per item (MG: Is this true?)|
+| *PROMOTIONAL.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL.price_per_unit* | The amount to add or subtract from MERCHANDISE.price_per_unit for a given item_id |
+| *PROMOTIONAL-SHP* | Special shipping promotions. Only affects SHIPPING. |
+| *PROMOTIONAL-SHP.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL-SHP.price_per_unit* | The amount to add or subtract from SHIPPING.price_per_unit for a given item_id |
+| *CERTIFICATE-RDM* | How to redeem a certificate, not yet implemented |
+| *SHIPPING* | Pricing information for the shipment part of the order |
+| *SHIPPING.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *SHIPPING.price_per_unit* | The price to ship the given item. The sum of all SHIPPING.price_per_units is the total shipping price |
+| *TAX* | Calculated based on Billing Addr., or if none, ip address. The tax block |
+| *TAX.\** |  Unless otherwise specified, values the same as in MERCHANDISE. |
+| *TAX.price_per_unit* | The tax to be applied to a given order-item in the cart |
 
 
 
@@ -533,8 +482,29 @@ This endpoint allows clients to view the current cart for a given id. The Respon
 | *order_id* | The order_id returned by the `initialize` action |
 | *currency_symbol* |  The currency symbol to user when displaying prices |
 | *total* |  The total cost of items in the cart |
-| *list* | See [the `list` overview](#cart---the-list-object)  |
-
+| *list* | This is the various price breakdowns of the cart. It is an array. Only objects with values are returned. |
+| *MERCHANDISE* | The items in a cart, grouped by item_id | 
+| *MERCHANDISE.item_id* | The item_id of the particular object |
+| *MERCHANDISE.quantity* | The number of times that item exists in the cart|
+| *MERCHANDISE.price_per_unit* | The price of each individual item. |
+| *MERCHANDISE.note* | A special note |
+| *MERCHANDISE.book* | If there is only one book (aka work; entry_id) for a given order, this is an object. If it's a bundle, it is an array. The value returned is book-min. See the `/metadata/details` api.
+| *MERCHANDISE.shipping_carrier* | The selected shipping carrier for the ordered items. This can be split within a single cart |
+| *MERCHANDISE.tracking_number* | The number a user can use to view the progress of their order. |
+| *MERCHANDISE.tracking_url* | Where a user can go to use their tracking_number |
+| *PROMOTIONAL* | Any items to which promotions are applied. Promotion terms are specified per item (MG: Is this true?)|
+| *PROMOTIONAL.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL.price_per_unit* | The amount to add or subtract from MERCHANDISE.price_per_unit for a given item_id |
+| *PROMOTIONAL-SHP* | Special shipping promotions. Only affects SHIPPING. |
+| *PROMOTIONAL-SHP.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL-SHP.price_per_unit* | The amount to add or subtract from SHIPPING.price_per_unit for a given item_id |
+| *CERTIFICATE-RDM* | How to redeem a certificate, not yet implemented |
+| *SHIPPING* | Pricing information for the shipment part of the order |
+| *SHIPPING.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *SHIPPING.price_per_unit* | The price to ship the given item. The sum of all SHIPPING.price_per_units is the total shipping price |
+| *TAX* | Calculated based on Billing Addr., or if none, ip address. The tax block |
+| *TAX.\** |  Unless otherwise specified, values the same as in MERCHANDISE. |
+| *TAX.price_per_unit* | The tax to be applied to a given order-item in the cart |
 
 ## Cart - remove
 
@@ -633,8 +603,29 @@ This endpoint removes a specific item to a cart. The response includes the same 
 | *order_id* | The order_id returned by the `initialize` action |
 | *currency_symbol* |  The currency symbol to user when displaying prices |
 | *total* |  The total cost of items in the cart |
-| *list* | See [the `list` overview](#cart---the-list-object) |
-
+| *list* | This is the various price breakdowns of the cart. It is an array. Only objects with values are returned. |
+| *MERCHANDISE* | The items in a cart, grouped by item_id | 
+| *MERCHANDISE.item_id* | The item_id of the particular object |
+| *MERCHANDISE.quantity* | The number of times that item exists in the cart|
+| *MERCHANDISE.price_per_unit* | The price of each individual item. |
+| *MERCHANDISE.note* | A special note |
+| *MERCHANDISE.book* | If there is only one book (aka work; entry_id) for a given order, this is an object. If it's a bundle, it is an array. The value returned is book-min. See the `/metadata/details` api.
+| *MERCHANDISE.shipping_carrier* | The selected shipping carrier for the ordered items. This can be split within a single cart |
+| *MERCHANDISE.tracking_number* | The number a user can use to view the progress of their order. |
+| *MERCHANDISE.tracking_url* | Where a user can go to use their tracking_number |
+| *PROMOTIONAL* | Any items to which promotions are applied. Promotion terms are specified per item (MG: Is this true?)|
+| *PROMOTIONAL.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL.price_per_unit* | The amount to add or subtract from MERCHANDISE.price_per_unit for a given item_id |
+| *PROMOTIONAL-SHP* | Special shipping promotions. Only affects SHIPPING. |
+| *PROMOTIONAL-SHP.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL-SHP.price_per_unit* | The amount to add or subtract from SHIPPING.price_per_unit for a given item_id |
+| *CERTIFICATE-RDM* | How to redeem a certificate, not yet implemented |
+| *SHIPPING* | Pricing information for the shipment part of the order |
+| *SHIPPING.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *SHIPPING.price_per_unit* | The price to ship the given item. The sum of all SHIPPING.price_per_units is the total shipping price |
+| *TAX* | Calculated based on Billing Addr., or if none, ip address. The tax block |
+| *TAX.\** |  Unless otherwise specified, values the same as in MERCHANDISE. |
+| *TAX.price_per_unit* | The tax to be applied to a given order-item in the cart |
 
 
 
@@ -739,8 +730,29 @@ This endpoint removes a specific item to a cart. The response includes the same 
 | *order_id* | The order_id returned by the `initialize` action |
 | *currency_symbol* |  The currency symbol to user when displaying prices |
 | *total* |  The total cost of items in the cart |
-| *list* | See [the `list` overview](#cart---the-list-object) |
-
+| *list* | This is the various price breakdowns of the cart. It is an array. Only objects with values are returned. |
+| *MERCHANDISE* | The items in a cart, grouped by item_id | 
+| *MERCHANDISE.item_id* | The item_id of the particular object |
+| *MERCHANDISE.quantity* | The number of times that item exists in the cart|
+| *MERCHANDISE.price_per_unit* | The price of each individual item. |
+| *MERCHANDISE.note* | A special note |
+| *MERCHANDISE.book* | If there is only one book (aka work; entry_id) for a given order, this is an object. If it's a bundle, it is an array. The value returned is book-min. See the `/metadata/details` api.
+| *MERCHANDISE.shipping_carrier* | The selected shipping carrier for the ordered items. This can be split within a single cart |
+| *MERCHANDISE.tracking_number* | The number a user can use to view the progress of their order. |
+| *MERCHANDISE.tracking_url* | Where a user can go to use their tracking_number |
+| *PROMOTIONAL* | Any items to which promotions are applied. Promotion terms are specified per item (MG: Is this true?)|
+| *PROMOTIONAL.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL.price_per_unit* | The amount to add or subtract from MERCHANDISE.price_per_unit for a given item_id |
+| *PROMOTIONAL-SHP* | Special shipping promotions. Only affects SHIPPING. |
+| *PROMOTIONAL-SHP.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL-SHP.price_per_unit* | The amount to add or subtract from SHIPPING.price_per_unit for a given item_id |
+| *CERTIFICATE-RDM* | How to redeem a certificate, not yet implemented |
+| *SHIPPING* | Pricing information for the shipment part of the order |
+| *SHIPPING.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *SHIPPING.price_per_unit* | The price to ship the given item. The sum of all SHIPPING.price_per_units is the total shipping price |
+| *TAX* | Calculated based on Billing Addr., or if none, ip address. The tax block |
+| *TAX.\** |  Unless otherwise specified, values the same as in MERCHANDISE. |
+| *TAX.price_per_unit* | The tax to be applied to a given order-item in the cart |
 
 ## Cart - Calculate Shipping
 
@@ -765,7 +777,7 @@ curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?
 
 Example:
 
-curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?action=detail&store_uid=ZOLABOOK&order_id=18&session_id=09379a8dc60c9a9fd8ab2cb2716ee00d'
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?action=cart&store_uid=ZOLABOOK&type=update&order_id=18&item_id=1508127&session_id=09379a8dc60c9a9fd8ab2cb2716ee00d&qty=7&isbn=9781455869749'
 
 ```
 > The above command returns JSON structured like this:
@@ -852,7 +864,7 @@ curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?action=detail&store_uid
 
 ```
 
-This gives user, billing, shipping, and order information for a given order_id. 
+This endpoint removes a specific item to a cart. The response includes the same information as `action=view`. 
 
 ### HTTP Request
 
@@ -864,9 +876,11 @@ This gives user, billing, shipping, and order information for a given order_id.
 |Parameter | Description |
 |--------- | ------- | 
 | *auth_member_id* | The member_id. This is optional, as it doesn't need to be passed in for logged out users. |
-| *action* | "detail" |
+| *action* | "" |
 | *store_uid* | If none is supplied, the store associated with the api_key is used |
+| *type* | "add" |
 | *order_id* | The order_id returned during `action=initialize` |
+| *item_id* | The item id of the book, certificate, or other being removed. Can be a comma-separated list |
 | *session_id* | The session_id retuned by the `action=initialize` call |
 
 ### Response 
@@ -875,89 +889,27 @@ This gives user, billing, shipping, and order information for a given order_id.
 |--------- | ------- | 
 | *order_id* | The order_id returned by the `initialize` action |
 | *currency_symbol* |  The currency symbol to user when displaying prices |
-| *status* | The status of a given order. Either [MG, WHAT ARE THE DIFF OPTIONS?] |
-| *ordered* | The date on which the order was placed. | 
-| *user* | A block of descriptive information returned for a given user. See `/session/profile` |
-| *shipping* | The shipping address for an order. See `/ecomm/address` to add an address |
-| *shipping.id* | The unique id for a shipping address |
-| *shipping.name* | The name of the person the item is being sent to |
-| *shipping.address1* | The first line of the address |
-| *shipping.address2* | The second line of the address |
-| *shipping.city* | The city the package is being sent to |
-| *shipping.state_alpha2* | The two letter abbreviation of the state or province the package is being sent to |
-| *shipping.state_name* | The full name of the state or province |
-| *shipping.zip* | The zip code the package is being sent to |
-| *shipping.country_alpha2* | The two letter country code. See http://www.editeur.org/files/ONIX%20for%20books%20-%20code%20lists/ONIX_BookProduct_Codelists_Issue_26.html for full list. |
-| *shipping.country_name* | The full name of the country. |
-| *shipping.label* | Any descriptive text of the address (e.g. "This is my secondary address")
-| *shipping.updated* | The Datetime when the Shipping was updated.
-| *billing* | The billing information. Most fields are analogous to their shipping counterparts. Extra fields explained below. |
-| *billing.card_name* | MG: DIFF BETWEEN CARD NAME AND CARD TYPE? |
-| *biling.card_type* | |
-| *card_last_four* | The last four digits of the cc number |
 | *total* |  The total cost of items in the cart |
-| *list* | See [the `list` overview](#cart---the-list-object)  |
-
-
-## Add Shipping Address 
-
-
-```shell
-Form:
-
-curl -H "Content-Type: application/json" -d '
-	{
-		"auth_member_id": 12, 
-		"action": "shipping",
-		"type" : "add",
-		"order_id" : "1234",
-		"name" : "$recipient_name",
-		"address1" : "$street_address",
-		"address2" : "$street_address_2",
-		"city" : "$city",
-		"state" : "$state_abbreviation",
-		"zip" : "$zip_or_postal",
-		"country_alpha2" : "$country_abbreviation",
-		"label" : "$special_statement",
-	}'
-	https://api.zo.la/v4/ecomm/
-
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-	"status" : "success",
-	"date" : [
-		"default" : {
-			"id" : "123",
-			"name" : "$recipient_name",
-			"address1" : "$street_address",
-			"address2" : "$street_address_2",
-			"city" : "$city",
-			"state" : "$state_abbreviation",
-			"zip" : "$zip_or_postal",
-			"country_alpha2" : "$country_abbreviation",
-			"country_name" : "$full_text",
-			"label" : "$special_statement"
-			"updated" : "2014-01-01 00:00:00"
-		},{
-			"id" : "123",
-			"name" : "$recipient_name",
-			"address1" : "$street_address",
-			"address2" : "$street_address_2",
-			"city" : "$city",
-			"state" : "$state_abbreviation",
-			"zip" : "$zip_or_postal",
-			"country_alpha2" : "$country_abbreviation",
-			"country_name" : "$full_text",
-			"label" : "$special_statement"
-			"updated" : "2014-01-01 00:00:00
-		}]
-}
-
-This adds a shipping address to a session or account. The returned data includes a `default` and a list of all addresses.
-
-
-		
+| *list* | This is the various price breakdowns of the cart. It is an array. Only objects with values are returned. |
+| *MERCHANDISE* | The items in a cart, grouped by item_id | 
+| *MERCHANDISE.item_id* | The item_id of the particular object |
+| *MERCHANDISE.quantity* | The number of times that item exists in the cart|
+| *MERCHANDISE.price_per_unit* | The price of each individual item. |
+| *MERCHANDISE.note* | A special note |
+| *MERCHANDISE.book* | If there is only one book (aka work; entry_id) for a given order, this is an object. If it's a bundle, it is an array. The value returned is book-min. See the `/metadata/details` api.
+| *MERCHANDISE.shipping_carrier* | The selected shipping carrier for the ordered items. This can be split within a single cart |
+| *MERCHANDISE.tracking_number* | The number a user can use to view the progress of their order. |
+| *MERCHANDISE.tracking_url* | Where a user can go to use their tracking_number |
+| *PROMOTIONAL* | Any items to which promotions are applied. Promotion terms are specified per item (MG: Is this true?)|
+| *PROMOTIONAL.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL.price_per_unit* | The amount to add or subtract from MERCHANDISE.price_per_unit for a given item_id |
+| *PROMOTIONAL-SHP* | Special shipping promotions. Only affects SHIPPING. |
+| *PROMOTIONAL-SHP.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *PROMOTIONAL-SHP.price_per_unit* | The amount to add or subtract from SHIPPING.price_per_unit for a given item_id |
+| *CERTIFICATE-RDM* | How to redeem a certificate, not yet implemented |
+| *SHIPPING* | Pricing information for the shipment part of the order |
+| *SHIPPING.\** | Unless otherwise specified, values the same as in MERCHANDISE |
+| *SHIPPING.price_per_unit* | The price to ship the given item. The sum of all SHIPPING.price_per_units is the total shipping price |
+| *TAX* | Calculated based on Billing Addr., or if none, ip address. The tax block |
+| *TAX.\** |  Unless otherwise specified, values the same as in MERCHANDISE. |
+| *TAX.price_per_unit* | The tax to be applied to a given order-item in the cart |
