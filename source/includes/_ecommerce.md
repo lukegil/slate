@@ -338,6 +338,49 @@ Initialize creates a cart session. An order_id is returned.
 | *session_id* | This is the session_id for a user. It should be passed in on all future calls, to track a user's process through the purchase flow | 
 
 
+## Cart - Item count
+
+```shell
+Form:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?
+	auth_member_id=123&
+	action=cart&
+	store_uid=$id&
+	type=count&
+	order_id=$id&
+	session_id=$id'
+
+Example:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?auth_member_id=123&action=cart&store_uid=ZOLABOOK&type=count&order_id=18&session_id=09379a8dc60c9a9fd8ab2cb2716ee00d'
+
+
+```
+> The above command returns JSON structured like this:
+
+```json
+{
+"status" : success
+"data": {
+	"count": 0
+	}
+}
+```
+
+This endpoint gets the number of books in a cart for a given auth_member_id OR order_id.
+
+### Request Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *auth_member_id* | The member_id. This is optional, as it doesn't need to be passed in for logged out users. |
+| *action* | "cart" |
+| *store_uid* | If none is supplied, the store associated with the api_key is used |
+| *type* | "count" |
+| *order_id* | The order_id returned during `action=initialize` |
+| *session_id* | The session_id retuned by the `action=initialize` call |
+
 
 ## Cart - add item 
 
@@ -892,14 +935,40 @@ This gives user, billing, shipping, and order information for a given order_id.
 | *shipping.label* | Any descriptive text of the address (e.g. "This is my secondary address")
 | *shipping.updated* | The Datetime when the Shipping was updated.
 | *billing* | The billing information. Most fields are analogous to their shipping counterparts. Extra fields explained below. |
-| *billing.card_name* | MG: DIFF BETWEEN CARD NAME AND CARD TYPE? |
-| *biling.card_type* | |
+| *billing.card_name* | The name on the card, if different from Billing Name |
+| *biling.card_type* | e.g. Visa |
 | *card_last_four* | The last four digits of the cc number |
 | *total* |  The total cost of items in the cart |
 | *list* | See [the `list` overview](#cart---the-list-object)  |
 
 
-## Add Shipping Address 
+## Shipping - Shipping Parameters
+
+All shipping requests use a similar set of request and return parameters. 
+
+### Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *auth_member_id* | The member_id, if the user is logged in. Either this or an order_id is required |
+| *id* | The unique id for a shipping address.  |
+| *order_id* | (optional) Adds the address to the owner of the order. Either this or an auth_member_id is required. |
+| *type* | The type of shipping action occurring. Either add|update|delete|set-default|view. Default is 'view'. |
+| *default* | Only used for logged in users. Specifies the address that should be used when none other is specified. |
+| *name* | The name of the person the item is being sent to. |
+| *address1* | The first line of the address |
+| *address2* | The second line of the address |
+| *city* | The city the package is being sent to |
+| *state_alpha2* | The two letter abbreviation of the state or province the package is being sent to |
+| *state_name* | The full name of the state or province |
+| *zip* | The zip code the package is being sent to |
+| *country_alpha2* | The two letter country code. See http://www.editeur.org/files/ONIX%20for%20books%20-%20code%20lists/ONIX_BookProduct_Codelists_Issue_26.html for full list. |
+| *country_name* | The full name of the country. |
+| *label* | Any descriptive text of the address (e.g. "This is my secondary address")
+| *updated* | The Datetime when the Shipping was updated.
+
+
+## Shipping - Add Shipping Address 
 
 
 ```shell
@@ -920,7 +989,7 @@ curl -H "Content-Type: application/json" -d '
 		"country_alpha2" : "$country_abbreviation",
 		"label" : "$special_statement",
 	}'
-	https://api.zo.la/v4/ecomm/
+	https://api.zo.la/v4/ecomm/address
 
 ```
 
@@ -929,7 +998,7 @@ curl -H "Content-Type: application/json" -d '
 ```json
 {
 	"status" : "success",
-	"date" : [
+	"data" : [
 		"default" : {
 			"id" : "123",
 			"name" : "$recipient_name",
@@ -957,7 +1026,854 @@ curl -H "Content-Type: application/json" -d '
 		}]
 }
 
-This adds a shipping address to a session or account. The returned data includes a `default` and a list of all addresses.
+
+## Shipping - Update Shipping Address
+
+```shell
+Form:
+
+curl -H "Content-Type: application/json" -d '
+	{
+		"auth_member_id": 12, 
+		"action": "shipping",
+		"type" : "update",
+		"id" : "$address_id",
+		"order_id" : "1234",
+		"name" : "$recipient_name",
+		"address1" : "$street_address",
+		"address2" : "$street_address_2",
+		"city" : "$city",
+		"state" : "$state_abbreviation",
+		"zip" : "$zip_or_postal",
+		"country_alpha2" : "$country_abbreviation",
+		"label" : "$special_statement",
+	}'
+	https://api.zo.la/v4/ecomm/address
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+	"status" : "success",
+	"data" : [
+		"default" : {
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00"
+		},{
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00
+		}]
+}
+
+```
+
+Update shipping can update any field of a shipping address. To specify which address to edit, specify the address_id, which is returned as `data.id` from `action=add`. Only the edited fields must be POSTed.
+
+##Shipping - Delete Shipping Address
 
 
-		
+```shell
+Form:
+
+curl -H "Content-Type: application/json" -d '
+	{
+		"auth_member_id": 12, 
+		"action": "shipping",
+		"type" : "update",
+		"id" : "$address_id",
+		"order_id" : "1234"
+	}'
+	https://api.zo.la/v4/ecomm/address
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+	"status" : "success",
+	"data" : [
+		"default" : {
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00"
+		},{
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00
+		}]
+}
+
+```
+
+Delete shipping removes a given address specified by an address_id. No extra information must be passed in. 
+
+
+## Shipping - Set Default Address
+
+```shell
+Form:
+
+curl -H "Content-Type: application/json" -d '
+	{
+		"auth_member_id": 12, 
+		"action": "shipping",
+		"type" : "set-default",
+		"id" : "$address_id",
+		"order_id" : "1234"
+	}'
+	https://api.zo.la/v4/ecomm/address
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+	"status" : "success",
+	"data" : [
+		"default" : {
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00"
+		},{
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00
+		}]
+}
+
+```
+
+Set-default specifies what shipping address should be used when not specified by the user. The first address a user adds should become the default. 
+
+
+## Shipping - View shipping addresses
+
+```shell
+Form:
+
+curl -H "Content-Type: application/json" -d '
+	{
+		"auth_member_id": 12, 
+		"action": "shipping",
+		"type" : "view",
+		"id" : "$address_id",
+		"order_id" : "1234"
+	}'
+	https://api.zo.la/v4/ecomm/address
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+	"status" : "success",
+	"data" : [
+		"default" : {
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00"
+		},{
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00
+		}]
+}
+
+```
+
+View shipping addresses simply displays all shipping addresses on file. 
+
+## Billing - Request and Response Parameters
+
+In general, billing is similar to shipping, just with additional fields for card information. 
+
+### Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *auth_member_id* | The member_id, if the user is logged in. Either this or an order_id is required |
+| *id* | The unique id for a credit card.  |
+| *order_id* | (optional) Adds the address to the owner of the order. Either this or an auth_member_id is required. |
+| *type* | The type of billing action occurring. Either add|update|delete|set-default|view. Default is 'view'. |
+| *default* | Only used for logged in users. Specifies the address that should be used when none other is specified. |
+| *card_name* | The name of the cardholder. Note that this is different from 'name' in shipping. This should also be the name used on account creation. |
+| *address1* | The first line of the billing address |
+| *address2* | The second line of the billing address |
+| *city* | The city of the billing address |
+| *state_alpha2* | The two letter abbreviation of the state or province the package is being sent to |
+| *state_name* | The full name of the state or province |
+| *zip* | The zip or postal code associated with the card |
+| *country_alpha2* | The two letter country code. See http://www.editeur.org/files/ONIX%20for%20books%20-%20code%20lists/ONIX_BookProduct_Codelists_Issue_26.html for full list. |
+| *country_name* | The full name of the country. |
+| *card_type* | Visa, Mastercard, AMEX, or Discover |
+| *card_last_four* | The last four digits of the credit card |
+| *card_exp_month* | The expiration month of the credit card. Two digit month. |
+| *card_exp_year* | The expiration year of the credit card. Four digit year. |
+| *card_cvv* | The 'secret code' on the card. |
+| *card_number* | The full credit card number. |
+| *label* | Any descriptive text of the billing info (e.g. "This is my new credit card") |
+| *updated* | The Datetime when the billing was updated. |
+
+
+## Billing - Add Billing
+
+
+```shell
+Form:
+
+curl -H "Content-Type: application/json" -d '
+	{
+		"auth_member_id": 12, 
+		"action": "shipping",
+		"type" : "add",
+		"order_id" : "1234",
+		"address1" : "$street_address",
+		"address2" : "$street_address_2",
+		"city" : "$city",
+		"state" : "$state_abbreviation",
+		"zip" : "$zip_or_postal",
+		"country_alpha2" : "$country_abbreviation",
+		"label" : "$special_statement",
+		"card_name": "$users_name",
+		"card_type": "$card_company",
+		"card_exp_month": "MM",
+		"card_exp_year": "YYYY",
+		"card_cvv": "123",
+		"card_number": "$full_card_num" 
+	}'
+	https://api.zo.la/v4/ecomm/address
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+	"status" : "success",
+	"data" : [
+		"default" : {
+			"id" : "123",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"card_name": "$name",
+            "card_type": "visa",
+            "card_last_four": "1234",
+            "card_exp_month": "12",
+            "card_exp_year": "2015",
+			"label" : "$special_statement",
+			"updated" : "2014-01-01 00:00:00"
+		},{
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"card_name": "$name",
+            "card_type": "visa",
+            "card_last_four": "1234",
+            "card_exp_month": "12",
+            "card_exp_year": "2015",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00
+		}]
+}
+
+
+This adds a new credit card and billing address to an order (if order_id is specified) or to a logged in account (if auth_member_id is specified).
+
+## Billing - Update Billing entry
+
+```shell
+Form:
+
+curl -H "Content-Type: application/json" -d '
+	{
+		"auth_member_id": 12, 
+		"action": "billing",
+		"type" : "update",
+		"order_id" : "1234",
+		"address1" : "$street_address",
+		"address2" : "$street_address_2",
+		"city" : "$city",
+		"state" : "$state_abbreviation",
+		"zip" : "$zip_or_postal",
+		"country_alpha2" : "$country_abbreviation",
+		"label" : "$special_statement",
+		"card_name": "$users_name",
+		"card_type": "$card_company",
+		"card_exp_month": "MM",
+		"card_exp_year": "YYYY",
+		"card_cvv": "123",
+		"card_number": "$full_card_num" 
+	}'
+	https://api.zo.la/v4/ecomm/address
+
+```
+
+> The above command returns JSON structured like this:
+
+
+```json
+{
+	"status" : "success",
+	"data" : [
+		"default" : {
+			"id" : "123",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"card_name": "$name",
+            "card_type": "visa",
+            "card_last_four": "1234",
+            "card_exp_month": "12",
+            "card_exp_year": "2015",
+			"label" : "$special_statement",
+			"updated" : "2014-01-01 00:00:00"
+		},{
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"card_name": "$name",
+            "card_type": "visa",
+            "card_last_four": "1234",
+            "card_exp_month": "12",
+            "card_exp_year": "2015",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00
+		}]
+}
+
+```
+
+Update billing can update any field of a billing entry. To specify which entry to edit, specify the billing_id, which is returned as `data.id` from `action=add`. Only the edited fields must be POSTed.
+
+##Shipping - Delete Shipping Address
+
+
+```shell
+Form:
+
+curl -H "Content-Type: application/json" -d '
+	{
+		"auth_member_id": 12, 
+		"action": "billing",
+		"type" : "delete",
+		"id" : "$billing_id",
+		"order_id" : "1234"
+	}'
+	https://api.zo.la/v4/ecomm/address
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+	"status" : "success",
+	"data" : [
+		"default" : {
+			"id" : "123",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"card_name": "$name",
+            "card_type": "visa",
+            "card_last_four": "1234",
+            "card_exp_month": "12",
+            "card_exp_year": "2015",
+			"label" : "$special_statement",
+			"updated" : "2014-01-01 00:00:00"
+		},{
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"card_name": "$name",
+            "card_type": "visa",
+            "card_last_four": "1234",
+            "card_exp_month": "12",
+            "card_exp_year": "2015",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00
+		}]
+}
+```
+
+Delete billing removes a given card specified by an billing_id. No extra information must be passed in. 
+
+
+## Billing - Set Default Card
+
+```shell
+Form:
+
+curl -H "Content-Type: application/json" -d '
+	{
+		"auth_member_id": 12, 
+		"action": "billing",
+		"type" : "set-default",
+		"id" : "$billing_id",
+		"order_id" : "1234"
+	}'
+	https://api.zo.la/v4/ecomm/address
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+	"status" : "success",
+	"data" : [
+		"default" : {
+			"id" : "123",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"card_name": "$name",
+            "card_type": "visa",
+            "card_last_four": "1234",
+            "card_exp_month": "12",
+            "card_exp_year": "2015",
+			"label" : "$special_statement",
+			"updated" : "2014-01-01 00:00:00"
+		},{
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"card_name": "$name",
+            "card_type": "visa",
+            "card_last_four": "1234",
+            "card_exp_month": "12",
+            "card_exp_year": "2015",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00
+		}]
+}
+
+```
+
+Set-default specifies what credit card should be used when not specified by the user. The first card a user adds should become the default. 
+
+
+## Billing - View All Billing
+
+```shell
+Form:
+
+curl -H "Content-Type: application/json" -d '
+	{
+		"auth_member_id": 12, 
+		"action": "billing",
+		"type" : "view",
+		"id" : "$billing_id",
+		"order_id" : "1234"
+	}'
+	https://api.zo.la/v4/ecomm/address
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+	"status" : "success",
+	"data" : [
+		"default" : {
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00"
+		},{
+			"id" : "123",
+			"name" : "$recipient_name",
+			"address1" : "$street_address",
+			"address2" : "$street_address_2",
+			"city" : "$city",
+			"state" : "$state_abbreviation",
+			"zip" : "$zip_or_postal",
+			"country_alpha2" : "$country_abbreviation",
+			"country_name" : "$full_text",
+			"label" : "$special_statement"
+			"updated" : "2014-01-01 00:00:00
+		}]
+}
+
+```
+
+View billing simply displays all cards on file. 
+
+
+## List Shipping Options
+
+```shell
+Form:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?
+	action=list&
+	store_uid=$id&
+	type=shipping&
+	order_id=$order'
+
+
+Example:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/address?action=list&store_uid=ZOLABOOK&type=shipping&order_id=18'
+
+```
+
+> The above command returns JSON structured like this:
+```json
+{
+
+    "status": "success",
+    "data": [
+        {
+            "type": "ECONOMY",
+            "carrier": "USPS",
+            "description": "Delivery in 3-10 Days"
+        },
+        {
+            "type": "EXPEDITED",
+            "carrier": "USPS",
+            "description": "Delivery in 2-6 Days"
+        }
+    ]
+
+}
+```
+
+This lists the possible shipping options for a user.
+
+### Request Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *action* | "list" |
+| *store_uid* | The id for a store. If not specified, it defaults to the API Key's associated store. |
+| *order_id* | The id associated with a given order. |
+| *type* | "shipping" |
+
+### Response Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *type* | The category of shipping for a given carrier |
+| *carrier* | e.g. USPS, UPS, Fedex |
+| *description* | A description of the shipping option |
+
+
+## List City-State for a Zip/Postal Code
+
+
+```shell
+Form:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/address?
+	action=list&
+	store_uid=ZOLABOOK&
+	type=zip&
+	id=06877'
+
+
+Example:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/address?action=list&store_uid=ZOLABOOK&type=zip&id=06877'
+
+```
+> The above command returns JSON structured like this:
+
+```json
+{
+
+    "status": "success",
+    "data": [
+        {
+            "city": "RIDGEFIELD",
+            "state_alpha2": "CT",
+            "state_name": "Connecticut",
+            "country_alpha2": "US",
+            "country_alpha3": "USA",
+            "country_name": "UNITED STATES",
+            "location_text": "Ridgefield, CT",
+            "lat": "41.27",
+            "long": "-73.49"
+        }
+    ]
+
+}
+```
+
+This lists all city/states associated with a given zipcode.
+
+### Request Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *action* | "list" |
+| *store_uid* | The id for a store. If not specified, it defaults to the API Key's associated store. |
+| *type* | "zip" |
+| *id* | The zip code in question |
+
+### Response Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *city* | The city name |
+| *state_alpha2* | The two letter abbreviation of a given state/province |
+| *state_name* | The full state/province name. |
+| *country_alpha2* | The two letter code for a country |
+| *country_alpha3* | The three letter code for a country |
+| *country_name* | The full name of the country |
+| *location_text* | The city, state. |
+| *lat* | The latitude |
+| *long* | The longitude |
+ 
+
+## List States/Provinces
+
+```shell
+Form:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/address?
+	action=list&
+	store_uid=ZOLABOOK&
+	type=state&
+	country_numeric_iso_3166_1=$country_id'
+
+
+Example:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/address?action=list&store_uid=ZOLABOOK&type=state&country_numeric_iso_3166_1=840'
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+
+{
+
+    "status": "success",
+    "data": [
+        {
+            "name": "Alabama",
+            "alpha2": "AL",
+            "distinction": "state"
+        },
+        {
+            "name": "Alaska",
+            "alpha2": "AK",
+            "distinction": "state"
+        }
+    ]
+}
+
+```
+
+Lists all the states or provinces. Can be used for populating state dropdowns.
+
+### Request Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *action* | "list" |
+| *store_uid* | id |
+| *type* | "state" |
+| *country_numeric_iso_3166_1* | 40 [USA] and 124 [CANADA]. 826 [UNITED KINGDOM], 372 [IRELAND] and 36 [AUSTRALIA] are also currently supported |
+
+### Response Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *name* | State's name |
+| *alpha2* | The two letter abbreviation for a state |
+| *distinction* | The category, e.g. state, province |
+
+
+## List Available Countries
+
+
+```shell
+Form:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/address?
+	action=list&
+	store_uid=ZOLABOOK&
+	type=country'
+
+
+Example:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/address?action=list&store_uid=ZOLABOOK&type=country'
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+
+{
+
+    "status": "success",
+    "data": [
+        {
+            "name": "UNITED STATES",
+            "alpha2": "US",
+            "alpha3": "USA",
+            "numeric": "840"
+        },
+        {
+            "name": "CANADA",
+            "alpha2": "CA",
+            "alpha3": "CAN",
+            "numeric": "124"
+        }
+    ]
+
+}
+
+```
+
+
+The countries available through The Everywhere Store.
+
+### Request Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *action* | "list" |
+| *store_uid* | The id |
+| *type* | "country" |
+
+### Response Parameters
+
+|Parameter | Description |
+|--------- | ------- | 
+| *alpha2* | The two letter code for a country |
+| *alpha3* | The three letter code for a country |
+| *name* | The full name of the country |
+| *numeric* | The numeric code of the country |
+
+## return-check
+
+To come
+
+
+
