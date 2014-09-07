@@ -115,6 +115,7 @@ curl -X GET 'https://api-staging.zo.la/v4/ecomm/saleable?action=item&isbn=978052
 				total_pages: "336",
 				isbn: "9780525478812",
 				min_description: "TIME Magazine&#8217;s #1 Fiction Book of 2012! &#147;The Fault in Our Stars is a love story, one of the most genuine and moving ones in recent American fiction, but it&#8217;s also an existential tragedy of tremendous intelligence and courage and sadness.&#8221; &#151;Lev Grossman, TIME Magazine Despite the tumor-shrinking medical miracle that has bought her a few years, Hazel has never&hellip;",
+				description : "TIME Magazine&#8217;s #1 Fiction Book of 2012! &#147;The Fault in Our Stars is a love story, one of the most genuine and moving ones in recent American fiction, but it&#8217;s also an existential tragedy of tremendous intelligence and courage and sadness.&#8221; &#151;Lev Grossman...",
 				publisher: [
 					{
 						id: "9e87ff41-3267-48fb-a2fa-6949d1832f80",
@@ -299,8 +300,7 @@ Form:
 
 curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?
 	action=initialize&
-	store_uid=$id&
-	s_id=$id'
+	store_uid=$id'
 	
 Example:
 
@@ -314,6 +314,7 @@ curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?action=initialize&store
 	"data" : {
 		   "order_id" : "123",
 		   "session_id" : "234oik2"
+		   }
 }
 ```
 
@@ -589,14 +590,14 @@ Form:
 curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?
 	action=cart&
 	store_uid=$id&
-	type=add&
+	type=remove&
 	order_id=$id&
 	item_id=$id
 	session_id=$id'
 
 Example:
 
-curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?action=cart&store_uid=ZOLABOOK&type=add&order_id=18&item_id=1508127&session_id=09379a8dc60c9a9fd8ab2cb2716ee00d'
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?action=cart&store_uid=ZOLABOOK&type=remove&order_id=18&item_id=1508127&session_id=09379a8dc60c9a9fd8ab2cb2716ee00d'
 
 
 ```
@@ -664,7 +665,7 @@ This endpoint removes a specific item to a cart. The response includes the same 
 | *auth_member_id* | The member_id. This is optional, as it doesn't need to be passed in for logged out users. |
 | *action* | "cart" |
 | *store_uid* | If none is supplied, the store associated with the api_key is used |
-| *type* | "add" |
+| *type* | "remove" |
 | *order_id* | The order_id returned during `action=initialize` |
 | *item_id* | The item id of the book, certificate, or other being removed. Can be a comma-separated list |
 | *session_id* | The session_id retuned by the `action=initialize` call |
@@ -768,7 +769,7 @@ This endpoint removes a specific item to a cart. The response includes the same 
 | *auth_member_id* | The member_id. This is optional, as it doesn't need to be passed in for logged out users. |
 | *action* | "cart" |
 | *store_uid* | If none is supplied, the store associated with the api_key is used |
-| *type* | "add" |
+| *type* | "update" |
 | *order_id* | The order_id returned during `action=initialize` |
 | *item_id* | The item id of the book, certificate, or other being removed. Can be a comma-separated list |
 | *session_id* | The session_id retuned by the `action=initialize` call |
@@ -787,7 +788,37 @@ This endpoint removes a specific item to a cart. The response includes the same 
 
 ## Cart - Calculate Shipping
 
-MORE TO COME
+```shell
+Form:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?
+	action=calculate_shipping&
+	store_uid=$id&
+	type=ECONOMY|EXPEDITED&
+	order_id=$id&
+	session_id=$id'
+
+Example:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/commerce?action=calculate_shipping&store_uid=ZOLABOOK&type=ECONOMY&order_id=18&session_id=09379a8dc60c9a9fd8ab2cb2716ee00d'
+
+```
+> The above command returns JSON structured like this:
+
+```json
+{
+
+    "status": "success",
+    "data": {
+        "currency_symbol": "&#x24;",
+        "shipping": "1.01"
+    }
+
+}
+```
+
+Used to calculate the price of shipping for a given order. `type` can be retrieved from "List shipping options".
+
 
 ## Cart - Process 
 
