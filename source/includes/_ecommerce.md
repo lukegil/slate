@@ -1902,9 +1902,32 @@ The countries available through The Everywhere Store.
 | *name* | The full name of the country |
 | *numeric* | The numeric code of the country |
 
-## return-check
+## Does user exist?
 
-To come
+```shell
+Form:
+
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/address?
+	action=return-check&
+	address_1=$billing_address_line_1&
+	card_name=$name'
 
 
+Example:
 
+curl -X GET 'https://api-staging.zo.la/v4/ecomm/address?action=return-check&address_1=44%20West%2030th%20street&card_name=Luke%20Gilson'
+
+```
+> The above command returns JSON structured like this:
+
+```json
+
+{
+
+    "status": "success",
+    "data": "old address"
+
+}
+```
+
+This checks if a user is in the system by sending a user's billing name and billing address street. 
